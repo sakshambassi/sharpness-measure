@@ -1,2 +1,2 @@
-# sharpness-measure
-Sharpness complexity measure of a PyTorch model
+# strikegen
+Generalization measures of Language Models
