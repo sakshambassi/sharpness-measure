@@ -57,12 +57,11 @@ inputs = {
     "labels": batch_0[3]
 }
 
-# For more robust calculation, we can average the sharpness over k steps
-# but for showing the usecase, lets just calculate directly
-
 # get the model and tokenizer
 model, tokenizer = get_model()
+# get model outputs
 x = model(**inputs)
+# get softmax output
 with torch.no_grad():
     probabilities = nn.functional.softmax(x.logits, dim=-1)
 
@@ -71,6 +70,5 @@ margin = strike_margin.calculate(probabilities=probabilities,
                         true_label_indexes=inputs['labels'],
                         margin_type='mean'
 )
-
 
 ```

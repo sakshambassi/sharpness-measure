@@ -32,8 +32,8 @@ class TestMargin(unittest.TestCase):
                         true_label_indexes=labels,
                         margin_type='mean'
                     )
+        print(f"Got margin = {margin}")
         self.assertTrue(type(margin) is float)
-        logging.info(f"Got successful margin = {margin}")
 
 
 if __name__ == "__main__":
