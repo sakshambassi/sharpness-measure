@@ -1,19 +1,18 @@
-import numpy as np
 import torch
-import transformers
+
 
 class Sharpness:
     def __init__(self) -> None:
         pass
 
-    def calculate_projection_radius(model, alpha=0.05):
+    def calculate_projection_radius(self, model, alpha=0.05):
         """
         Calculate the projection radius to make the model not deviate beyond projection_radius
-        
+
         Args:
             model: given pytorch model
             alpha: param value which is used to adjust the radius
-        
+
         Returns:
             float: projected radius that the model should be within
         """
@@ -23,16 +22,18 @@ class Sharpness:
         projection_radius = alpha * total_norm
         return projection_radius
 
-    def calculate(model: transformers.models.bert,
-                input_tensor: dict,
-                label_tensor: torch.Tensor,
-                gradient_accumulation_steps: int = 1,
-                noise_scale: float = 0.1,
-                verbose: bool = False
-                ):
+    def calculate(
+        self,
+        model,
+        input_tensor: dict,
+        label_tensor: torch.Tensor,
+        gradient_accumulation_steps: int = 1,
+        noise_scale: float = 0.1,
+        verbose: bool = False,
+    ):
         """
         Calculate absolute sharpness on the given batch of model
-        
+
         Args:
             model: given model
             input_tensor: is the batch on which sharpness will be calculated
@@ -56,7 +57,7 @@ class Sharpness:
         model.eval()
         criterion = torch.nn.CrossEntropyLoss()
         params = [(n, p) for n, p in model.named_parameters()]
-        
+
         # 1. Save the original weights and compute the loss with those weights
         W_0 = [v.data.clone() for k, v in model.named_parameters()]
         outputs_0 = model(**input_tensor)
@@ -70,6 +71,7 @@ class Sharpness:
                 with torch.no_grad():
                     noise = torch.randn_like(w) * scale
                     w.add_(noise)
+
         # 2. Add noise to the weights to perturb them
         add_noise_to_weights(noise_scale)
         W_prime = [v.data.clone() for k, v in model.named_parameters()]
@@ -80,10 +82,7 @@ class Sharpness:
         loss = criterion(logits, label_tensor)
 
         dW = torch.autograd.grad(
-            loss,
-            [p for n, p in params],
-            retain_graph=True,
-            create_graph=True
+            loss, [p for n, p in params], retain_graph=True, create_graph=True
         )
         # 4. Update the weights using the gradients
         n = learning_rate = 0.05
@@ -100,9 +99,12 @@ class Sharpness:
 
         W_new = [v.data for k, v in model.named_parameters()]
 
-        projection_radius = calculate_projection_radius(model)
+        projection_radius = self.calculate_projection_radius(model)
 
-        W_proj = [project_weights(W_new[i], W_0[i], projection_radius) for i in range(len(W_new))]
+        W_proj = [
+            project_weights(W_new[i], W_0[i], projection_radius)
+            for i in range(len(W_new))
+        ]
         with torch.no_grad():
             for i, (name, param) in enumerate(params):
                 param.data = W_proj[i]
