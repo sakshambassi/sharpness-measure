@@ -15,7 +15,7 @@ strike_sharpness = Sharpness()
 # get batch from data
 batch_0 = eval_dataloader[0]
 # offload batch on gpu (if any)
-batch_0 = tuple(t.to(device) for t in batch)
+batch_0 = tuple(t.to(device) for t in batch_0)
 # convert the batch to dict
 inputs = {
     "input_ids": batch_0[0],
@@ -49,7 +49,7 @@ strike_margin = Margin()
 # get batch from data
 batch_0 = eval_dataloader[0]
 # offload batch on gpu (if any)
-batch_0 = tuple(t.to(device) for t in batch)
+batch_0 = tuple(t.to(device) for t in batch_0)
 # convert the batch to dict
 inputs = {
     "input_ids": batch_0[0],
